@@ -146,8 +146,10 @@ def backtest(eigen, model, tickers, X_test, X_test_raw):
         'EigenPorfolio Return': eigen_portfolio_returns,
         'Equal Weight Index': equal_weight_return
         }, index=X_test.index)
-    np.cumprod(df_plot + 1).plot(title='Returns of the equal weighted index vs. eigen-portfolio', 
-                          figsize=(12,6), linewidth=3)
+    np.cumprod(df_plot + 1).plot(
+        title='Returns of the equal weighted index vs. eigen-portfolio',
+        figsize=(12,6),
+        linewidth=3)
     plt.show()
     
 
