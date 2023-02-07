@@ -116,8 +116,10 @@ def get_all_portfolios(returns):
     print('HRP portfolio created')
     mvp = getMVP(cov)
     print('MVP portfolio created')
-    mvp = pd.Series(mvp, index=cov.index)
-    portfolios = pd.DataFrame([mvp, hrp], index=['MVP', 'HRP']).T
+    
+    mvp_df = pd.DataFrame({'Ticker': cov.index, 'MVP': mvp})
+    hrp_df = pd.DataFrame({'Ticker': hrp.index, 'HRP': hrp.values})
+    portfolios = pd.merge(mvp_df, hrp_df, how='outer', on='Ticker')
     portfolios['HRP'] = portfolios['HRP'].apply(lambda x: x * 100)
     portfolios['MVP'] = portfolios['MVP'].apply(lambda x: x * 100) 
     return portfolios

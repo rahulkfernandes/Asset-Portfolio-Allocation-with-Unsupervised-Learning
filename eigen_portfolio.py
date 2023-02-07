@@ -86,20 +86,18 @@ def sharpe_ratio(ts_returns, periods_per_year=252):
 
     return annualized_return, annualized_vol, annualized_sharpe
 
-def optimizedPortfolio(model, rescaledDataset, X_raw):
+def optimizedPortfolio(model, rescaledDataset, X_raw, tickers):
     n_portfolios = len(model.components_)
     annualized_ret = np.array([0.] * n_portfolios)
     sharpe_metric = np.array([0.] * n_portfolios)
     annualized_vol = np.array([0.] * n_portfolios)
     highest_sharpe = 0 
-    stock_tickers = rescaledDataset.columns.values
-    n_tickers = len(stock_tickers)
     pcs = model.components_
     
     for i in range(n_portfolios):
         
         pc_w = pcs[i] / sum(pcs[i])
-        eigen_prtfi = pd.DataFrame(data ={'weights': pc_w.squeeze()*100}, index = stock_tickers)
+        eigen_prtfi = pd.DataFrame(data ={'weights': pc_w.squeeze()*100}, index = tickers)
         eigen_prtfi.sort_values(by=['weights'], ascending=False, inplace=True)
         eigen_prti_returns = np.dot(X_raw.loc[:, eigen_prtfi.index], pc_w)
         eigen_prti_returns = pd.Series(eigen_prti_returns.squeeze(), index=X_raw.index)
@@ -119,8 +117,8 @@ def optimizedPortfolio(model, rescaledDataset, X_raw):
     return highest_sharpe
 
 def createEigen(weights, tickers, plot=False):
-    portfolio = pd.DataFrame(data ={'weights': weights.squeeze()*100}, index = tickers) 
-    portfolio.sort_values(by=['weights'], ascending=False, inplace=True)
+    portfolio = pd.DataFrame(data ={'Ticker': tickers,'weights': weights.squeeze()*100}) 
+    #portfolio.sort_values(by=['weights'], ascending=False, inplace=True)
     if plot:
         print('Sum of weights of current eigen-portfolio: %.2f' % np.sum(portfolio))
         portfolio.plot(title='Current Eigen-Portfolio Weights', 
@@ -165,7 +163,6 @@ def eigen(dataset):
     X_test_raw = returns[percentage:]
 
     stock_tickers = rescaled.columns.values
-    n_tickers = len(stock_tickers)
 
     pca = PCA()
     PrincipalComponent = pca.fit(X_train)
@@ -174,8 +171,8 @@ def eigen(dataset):
     # eigen_portfolios(PrincipalComponent, dataset.columns) # Plot Eigen Portolios
 
     weights = PCWeights(PrincipalComponent)
-    pf_high_sharpe = optimizedPortfolio(PrincipalComponent, rescaled, X_train_raw)
+    pf_high_sharpe = optimizedPortfolio(PrincipalComponent, rescaled, X_train_raw, stock_tickers)
     portfolio = createEigen(weights[pf_high_sharpe], stock_tickers, plot=False)
-
+    portfolio.rename(columns={'weights': 'Eigen'}, inplace=True)
     # backtest(weights[5], PrincipalComponent, stock_tickers, X_test, X_test_raw)
     return portfolio
