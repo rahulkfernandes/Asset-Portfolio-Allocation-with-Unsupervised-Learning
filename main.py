@@ -1,7 +1,8 @@
+import sys
 import pandas as pd
-from eigen_portfolio import eigen
 from hrp import mvp_hrp
 import matplotlib.pyplot as plt
+from eigen_portfolio import eigen
 
 def plot_pf(df):
     fig, (ax1, ax2, ax3) = plt.subplots(1, 3,figsize=(15,10))
@@ -15,10 +16,21 @@ def plot_pf(df):
 
 if __name__=="__main__":
     dataset = pd.read_csv('./datasets/Dow_adjcloses.csv',index_col=0)
+    
+    if len(sys.argv) == 2:
+        if sys.argv[1] == 'backtest':
+            backtest = True
+        else: 
+            print("Enter 'python main.py backtest' to run in backtest mode")
+        print('RUNNING IN BACKTEST MODE')
+        eigen_pf = eigen(dataset, backtest)
+        hrp_pf = mvp_hrp(dataset, backtest)
+        
+    else:
+        eigen_pf = eigen(dataset)
+        hrp_pf = mvp_hrp(dataset)
 
-    eigen_pf = eigen(dataset)
-    hrp_pf = mvp_hrp(dataset)
-
-    df = pd.merge(eigen_pf, hrp_pf, how='outer', on='Ticker')
-    print(df)
-    plot_pf(df)    
+    all_pf = pd.merge(eigen_pf, hrp_pf, how='outer', on='Ticker')
+    print('\n===============All Portfolios==============')
+    print(all_pf)
+    plot_pf(all_pf)    

@@ -1,9 +1,10 @@
 import numpy as np
 import pandas as pd
+import cvxopt as opt
 import matplotlib.pyplot as plt
 import scipy.cluster.hierarchy as sch
 from scipy.cluster.hierarchy import dendrogram, linkage, cophenet
-import cvxopt as opt
+
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -113,9 +114,7 @@ def getRecBipart(cov, sortIx):
 def get_all_portfolios(returns):
     cov, corr = returns.cov(), returns.corr()
     hrp = getHRP(cov, corr)
-    print('HRP portfolio created')
     mvp = getMVP(cov)
-    print('MVP portfolio created')
     
     mvp_df = pd.DataFrame({'Ticker': cov.index, 'MVP': mvp})
     hrp_df = pd.DataFrame({'Ticker': hrp.index, 'HRP': hrp.values})
@@ -132,13 +131,19 @@ def plot_pf(pf):
     ax2.set_title('HRP',fontsize = 30)
     plt.show()
 
-def backtest(pf,returns, returns_test):
+def compare(pf,returns, returns_test):
+    plt.figure(figsize=(15,5))
+    plt.bar(pf['Ticker'], pf['HRP'])
+    plt.bar(pf['Ticker'], pf['MVP'])
+    plt.title('Current MVP and HRP Portfolio Weights')
+    plt.legend(['HRP', 'MVP'])
+    print('Backtesting HRP portfolio against MVP portfolio...')
     Insample_Result=pd.DataFrame(
-        np.dot(returns,np.array(pf)),
+        np.dot(returns,np.array(pf.drop(['Ticker'],axis=1))),
         columns=['MVP', 'HRP'],
         index = returns.index)
     OutOfSample_Result=pd.DataFrame(
-        np.dot(returns_test,np.array(pf)),
+        np.dot(returns_test,np.array(pf.drop(['Ticker'],axis=1))),
         columns=['MVP', 'HRP'],
         index = returns_test.index)
     Insample_Result.cumsum().plot(figsize=(10, 5), title ="In-Sample Results")
@@ -147,24 +152,29 @@ def backtest(pf,returns, returns_test):
     stddev = Insample_Result.std() * np.sqrt(252)
     sharp_ratio = (Insample_Result.mean()*np.sqrt(252))/(Insample_Result).std()
     Results = pd.DataFrame(dict(stdev=stddev, sharp_ratio = sharp_ratio))
+    print('In Sample Results:')
     print(Results)
-    #Outof_sample Results
     stddev_oos = OutOfSample_Result.std() * np.sqrt(252)
     sharp_ratio_oos = (OutOfSample_Result.mean()*np.sqrt(252))/(OutOfSample_Result).std()
     Results_oos = pd.DataFrame(dict(stdev_oos=stddev_oos,sharp_ratio_oos = sharp_ratio_oos))
+    print('Out of Sample Results:')
     print(Results_oos)
+    plt.show()
 
-def mvp_hrp(dataset):
+def mvp_hrp(dataset, backtest=False):
     processed_data = preprocess(dataset)
-    
-    X = processed_data.copy('deep')
-    row = len(X)
-    train_len = int(row * 0.8)
-    X_train = X.head(train_len)
-    X_test = X.tail(row-train_len)
-    returns = X_train.pct_change().dropna()
-    returns_test=X_test.pct_change().dropna()
+    if backtest == True:
+        row = len(processed_data)
+        train_len = int(row * 0.8)
+        X_train = processed_data.head(train_len)
+        X_test = processed_data.tail(row-train_len)
+        returns = X_train.pct_change().dropna()
+        returns_test = X_test.pct_change().dropna()
 
-    portfolios = get_all_portfolios(returns)
-    #backtest(returns, returns_test)
+        portfolios = get_all_portfolios(returns)
+        compare(portfolios, returns, returns_test)
+    else:
+        returns_all = processed_data.pct_change().dropna()
+        portfolios = get_all_portfolios(returns_all)
+        print('MVP and HRP Portfolios Created!')
     return portfolios
