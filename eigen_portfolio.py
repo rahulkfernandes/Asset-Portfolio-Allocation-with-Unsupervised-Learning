@@ -147,7 +147,7 @@ def createEigen(weights, tickers, plot=False):
     #portfolio.sort_values(by=['weights'], ascending=False, inplace=True)
     if plot:
         print('Sum of weights of current eigen-portfolio: %.2f' % np.sum(portfolio['weights']))
-        plt.figure(figsize=(15,5))
+        plt.figure(figsize=(15,6))
         plt.bar(portfolio['Ticker'], portfolio['weights'])
         plt.title('Current Eigen-Portfolio Weights')
         plt.show()

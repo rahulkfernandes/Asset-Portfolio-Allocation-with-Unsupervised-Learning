@@ -132,11 +132,14 @@ def plot_pf(pf):
     plt.show()
 
 def compare(pf,returns, returns_test):
-    plt.figure(figsize=(15,5))
-    plt.bar(pf['Ticker'], pf['HRP'])
-    plt.bar(pf['Ticker'], pf['MVP'])
+    bar_width = 0.25
+    x_axis = np.arange(len(pf['Ticker']))
+    plt.figure(figsize=(15,6))
+    plt.bar(x_axis-bar_width, pf['MVP'], width=bar_width*2)
+    plt.bar(x_axis+bar_width, pf['HRP'], width=bar_width*2)
+    plt.xticks(x_axis, pf['Ticker'])
     plt.title('Current MVP and HRP Portfolio Weights')
-    plt.legend(['HRP', 'MVP'])
+    plt.legend(['MVP', 'HRP'])
     print('Backtesting HRP portfolio against MVP portfolio...')
     Insample_Result=pd.DataFrame(
         np.dot(returns,np.array(pf.drop(['Ticker'],axis=1))),
@@ -146,8 +149,14 @@ def compare(pf,returns, returns_test):
         np.dot(returns_test,np.array(pf.drop(['Ticker'],axis=1))),
         columns=['MVP', 'HRP'],
         index = returns_test.index)
-    Insample_Result.cumsum().plot(figsize=(10, 5), title ="In-Sample Results")
-    OutOfSample_Result.cumsum().plot(figsize=(10, 5), title ="Out Of Sample Results")
+    Insample_Result.cumsum().plot(
+        figsize=(12, 6),
+        title ="MVP vs HRP In-Sample Results"
+        )
+    OutOfSample_Result.cumsum().plot(
+        figsize=(12, 6),
+        title ="MVP vs HRP Out Of Sample Results"
+        )
 
     stddev = Insample_Result.std() * np.sqrt(252)
     sharp_ratio = (Insample_Result.mean()*np.sqrt(252))/(Insample_Result).std()
