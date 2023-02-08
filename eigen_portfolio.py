@@ -5,13 +5,6 @@ import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
-def show_corr(data):
-    correlation = data.corr()
-    plt.figure(figsize=(15,10))
-    plt.title('Correlation Matrix')
-    sns.heatmap(correlation, vmax=1, square=True,annot=True,cmap='cubehelix')
-    plt.show()
-
 def preprocessing(data):
     missing_fractions = data.isnull().mean().sort_values(ascending=False)
     drop_list = sorted(list(missing_fractions[missing_fractions > 0.3].index))
@@ -176,9 +169,7 @@ def backtest_eq_weight(eigen, model, tickers, X_test, X_test_raw):
         linewidth=3)
     plt.show()
     
-
 def eigen(dataset, backtest=False):
-    #show_corr(dataset) # Plot Correlation Matix
     rescaled, returns = preprocessing(dataset)
     #show_returns('AAPL',rescaled) # Plot rescaled returns
     stock_tickers = rescaled.columns.values

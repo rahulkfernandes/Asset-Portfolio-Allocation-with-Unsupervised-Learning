@@ -140,15 +140,19 @@ def compare(pf,returns, returns_test):
     plt.xticks(x_axis, pf['Ticker'])
     plt.title('Current MVP and HRP Portfolio Weights')
     plt.legend(['MVP', 'HRP'])
+
     print('Backtesting HRP portfolio against MVP portfolio...')
+    pf['Equal_Weight'] = np.full((len(pf['Ticker'])), 100/len(pf['Ticker']))
     Insample_Result=pd.DataFrame(
         np.dot(returns,np.array(pf.drop(['Ticker'],axis=1))),
-        columns=['MVP', 'HRP'],
-        index = returns.index)
+        columns=['MVP', 'HRP', 'Equal_Weight'],
+        index = returns.index
+        )
     OutOfSample_Result=pd.DataFrame(
         np.dot(returns_test,np.array(pf.drop(['Ticker'],axis=1))),
-        columns=['MVP', 'HRP'],
-        index = returns_test.index)
+        columns=['MVP', 'HRP', 'Equal_Weight'],
+        index = returns_test.index
+        )
     Insample_Result.cumsum().plot(
         figsize=(12, 6),
         title ="MVP vs HRP In-Sample Results"
@@ -165,7 +169,7 @@ def compare(pf,returns, returns_test):
     print(Results)
     stddev_oos = OutOfSample_Result.std() * np.sqrt(252)
     sharp_ratio_oos = (OutOfSample_Result.mean()*np.sqrt(252))/(OutOfSample_Result).std()
-    Results_oos = pd.DataFrame(dict(stdev_oos=stddev_oos,sharp_ratio_oos = sharp_ratio_oos))
+    Results_oos = pd.DataFrame(dict(stdev_oos=stddev_oos,sharp_ratio_oos=sharp_ratio_oos))
     print('Out of Sample Results:')
     print(Results_oos)
     plt.show()

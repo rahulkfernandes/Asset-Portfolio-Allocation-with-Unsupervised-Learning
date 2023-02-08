@@ -1,8 +1,16 @@
 import sys
 import pandas as pd
+import seaborn as sns
 from hrp import mvp_hrp
 import matplotlib.pyplot as plt
 from eigen_portfolio import eigen
+
+def show_corr(data):
+    correlation = data.corr()
+    plt.figure(figsize=(15,10))
+    plt.title('Correlation Matrix')
+    sns.heatmap(correlation, vmax=1, square=True, annot=True, cmap='cubehelix')
+    plt.show()
 
 def plot_pf(df):
     fig, (ax1, ax2, ax3) = plt.subplots(1, 3,figsize=(15,10))
@@ -16,7 +24,8 @@ def plot_pf(df):
 
 if __name__=="__main__":
     dataset = pd.read_csv('./datasets/Dow_adjcloses.csv',index_col=0)
-    
+    #show_corr(dataset)
+
     if len(sys.argv) == 2:
         if sys.argv[1] == 'backtest':
             backtest = True
