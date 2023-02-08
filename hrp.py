@@ -155,11 +155,11 @@ def compare(pf,returns, returns_test):
         )
     Insample_Result.cumsum().plot(
         figsize=(12, 6),
-        title ="MVP vs HRP In-Sample Results"
+        title ="MVP vs HRP vs Equal Weight In-Sample Results"
         )
     OutOfSample_Result.cumsum().plot(
         figsize=(12, 6),
-        title ="MVP vs HRP Out Of Sample Results"
+        title ="MVP vs HRP vs Equal Weight Out Of Sample Results"
         )
 
     stddev = Insample_Result.std() * np.sqrt(252)
