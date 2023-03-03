@@ -118,9 +118,7 @@ def get_all_portfolios(returns):
     
     mvp_df = pd.DataFrame({'Ticker': cov.index, 'MVP': mvp})
     hrp_df = pd.DataFrame({'Ticker': hrp.index, 'HRP': hrp.values})
-    portfolios = pd.merge(mvp_df, hrp_df, how='outer', on='Ticker')
-    portfolios['HRP'] = portfolios['HRP'].apply(lambda x: x * 100)
-    portfolios['MVP'] = portfolios['MVP'].apply(lambda x: x * 100) 
+    portfolios = pd.merge(mvp_df, hrp_df, how='outer', on='Ticker') 
     return portfolios
 
 def plot_pf(pf):
@@ -174,6 +172,13 @@ def compare(pf,returns, returns_test):
     print(Results_oos)
     plt.show()
 
+def sharpe_ratio(ts_returns, periods_per_year=252):
+    n_years = ts_returns.shape[0]/periods_per_year
+    annualized_return = np.power(np.prod(1+ts_returns),(1/n_years))-1
+    annualized_vol = ts_returns.std() * np.sqrt(periods_per_year)
+    annualized_sharpe = annualized_return / annualized_vol
+    return annualized_sharpe
+
 def mvp_hrp(dataset, backtest=False):
     processed_data = preprocess(dataset)
     if backtest == True:
@@ -185,9 +190,19 @@ def mvp_hrp(dataset, backtest=False):
         returns_test = X_test.pct_change().dropna()
 
         portfolios = get_all_portfolios(returns)
+        portfolios['HRP'] = portfolios['HRP'].apply(lambda x: x * 100)
+        portfolios['MVP'] = portfolios['MVP'].apply(lambda x: x * 100)
         compare(portfolios, returns, returns_test)
     else:
         returns_all = processed_data.pct_change().dropna()
         portfolios = get_all_portfolios(returns_all)
+        hrp_returns = np.dot(returns_all, portfolios['HRP'].values)
+        hrp_sharpe = sharpe_ratio(hrp_returns)
+        mvp_returns = np.dot(returns_all, portfolios['MVP'].values)
+        mvp_sharpe = sharpe_ratio(mvp_returns)
+        print('HRP Sharpe Ratio =', hrp_sharpe)
+        print('MVP Sharpe Ratio =', mvp_sharpe)
+        portfolios['HRP'] = portfolios['HRP'].apply(lambda x: x * 100)
+        portfolios['MVP'] = portfolios['MVP'].apply(lambda x: x * 100)
         print('MVP and HRP Portfolios Created!')
     return portfolios
